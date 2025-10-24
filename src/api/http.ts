@@ -1,13 +1,18 @@
+// src/api/http.ts
 import axios from "axios";
 
-const http = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE,
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE, // ej: http://localhost:5072/api
+  withCredentials: false,
 });
 
-http.interceptors.request.use((cfg) => {
-  const token = localStorage.getItem("token");
-  if (token) cfg.headers.Authorization = `Bearer ${token}`;
-  return cfg;
+api.interceptors.request.use((config) => {
+  const raw = localStorage.getItem("auth");
+  if (raw) {
+    const { token } = JSON.parse(raw);
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
-export default http;
+export default api;

@@ -1,9 +1,16 @@
-import { Navigate } from "react-router-dom";
+// src/auth/ProtectedRoute.tsx
+import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "./AuthContext";
-import type { ReactNode } from "react";
 
-export default function ProtectedRoute({ children }: { children: ReactNode }) {
+export default function ProtectedRoute({ allowed }: { allowed?: string[] }) {
   const { user } = useAuth();
+
   if (!user) return <Navigate to="/login" replace />;
-  return <>{children}</>;
+
+  if (allowed && !allowed.includes(user.nombre_rol.toUpperCase())) {
+    // si no tiene rol permitido, mándalo a home o a una página 403
+    return <Navigate to="/home" replace />;
+  }
+
+  return <Outlet />;
 }

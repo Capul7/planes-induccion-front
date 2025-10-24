@@ -1,60 +1,26 @@
-const API = import.meta.env.VITE_API_BASE; // ej: https://.../api
+// src/api/auth.ts
+import api from "./http";
 
-export type LoginResponse = {
-  token: string;
-  expiresAt: string;
-  usuarioId: number;
-  colaboradorId: number | null;
-  userName: string;
-  rol: string;
-  nombreColaborador: string | null;
+export type UserInfo = {
+  usuario_id: number;
+  colaborador_id?: number | null;
+  nombre_usuario: string;
+  rol_id: number;
+  nombre_rol: string;
+  permisos?: string[];
 };
 
-// --- utils ----------------------------------------------------
-function setToken(token: string) {
-  localStorage.setItem("token", token);
-}
-function getToken(): string | null {
-  return localStorage.getItem("token");
-}
-export function logout() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-}
+export type LoginResp = { token: string; user: UserInfo };
 
-// --- API calls ------------------------------------------------
-export async function login(username: string, password: string): Promise<LoginResponse> {
-  const res = await fetch(`${API}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password })
+export async function login(username: string, password: string) {
+  const { data } = await api.post<LoginResp>("/auth/login", {
+    username,
+    password,
   });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `Login failed (${res.status})`);
-  }
-
-  const data = (await res.json()) as LoginResponse;
-  setToken(data.token);
-  // guarda al usuario “casi” completo para mostrar en UI
-  localStorage.setItem("user", JSON.stringify(data));
   return data;
 }
 
-export function getCurrentUser(): LoginResponse | null {
-  const raw = localStorage.getItem("user");
-  if (!raw) return null;
-  try { return JSON.parse(raw) as LoginResponse; } catch { return null; }
-}
-
-// (Opcional) Golpea /auth/me si quieres refrescar datos protegidos
-export async function me(): Promise<any> {
-  const tok = getToken();
-  if (!tok) throw new Error("No token");
-  const res = await fetch(`${API}/auth/me`, {
-    headers: { Authorization: `Bearer ${tok}` }
-  });
-  if (!res.ok) throw new Error(`Me failed (${res.status})`);
-  return res.json();
+export async function me() {
+  const { data } = await api.get<UserInfo>("/auth/me");
+  return data;
 }

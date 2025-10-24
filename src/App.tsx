@@ -1,33 +1,43 @@
-// src/App.tsx
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./auth/AuthContext";
-import ProtectedRoute from "./auth/ProtectedRoute";
-import LoginPage from "./auth/LoginPage";
-import Dashboard from "./pages/Dashboard";
+import { AuthProvider } from "@/auth/AuthContext";
+import { Navigate, Route, Routes } from "react-router-dom";
 
-function IndexRedirect() {
-  const { user } = useAuth();
-  return <Navigate to={user ? "/home" : "/login"} replace />;
-}
+import AdminPanel from "@/pages/AdminPanel";
+import Inicio from "@/pages/Inicio";
+import LoginPage from "@/pages/LoginPage";
+import Unauthorized from "@/pages/Unauthorized";
+import { RequireAuth } from "@/routes/RequireAuth";
 
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<IndexRedirect />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route
-            path="/home"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="*" element={<div style={{ padding: 24 }}>404</div>} />
-        </Routes>
-      </BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+
+        {/* Rutas protegidas */}
+        <Route
+          path="/admin"
+          element={
+            <RequireAuth roles={["Administrador", "Admin"]}>
+              <AdminPanel />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/inicio"
+          element={
+            <RequireAuth>
+              <Inicio />
+            </RequireAuth>
+          }
+        />
+
+        <Route path="/unauthorized" element={<Unauthorized />} />
+
+        {/* Defaults */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
     </AuthProvider>
   );
 }
