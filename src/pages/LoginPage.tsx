@@ -1,6 +1,5 @@
 import { useAuth } from "@/auth/AuthContext";
 import { useState } from "react";
-import logo from "/logo_transparente.png";
 
 
 type Tab = "colaborador" | "admin";
@@ -41,7 +40,7 @@ return (
     <div className="flex flex-col items-center gap-2 mb-6">
   <div className="h-28 w-28 flex items-center justify-center rounded-3xl bg-white shadow-md overflow-hidden">
     <img
-      src={logo}
+      src="/logo_transparente.png"
       alt="Canella"
       className="h-[20rem] w-[20rem] object-contain transform scale-[2.2]"
     />
